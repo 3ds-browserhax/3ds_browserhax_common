@@ -33,6 +33,7 @@ New3DS system Internet Browser(SKATER) (see also http://3dbrew.org/wiki/Internet
 * 1.6.10147 v6144 10.6.0-31 KOR is "supported" for this but it's not tested.
 * 1.7.10150 v7184 10.7.0-32..11.0.0-33 KOR is also supported for this.
 * 1.8.10156 v8192 11.1.0-34
+* 1.10.10166 v10272 11.9.0-42
 
 # Exploit testing
 If you want to test a browser exploit on an unsupported browser version just to see if it at least crashes, you can use this: "URL?browserver={ver}". Where ver is one of the browservers listed in 3dsbrowserhax_common.php, such as "85" for New3DS or "7" for Old3DS(without quotes), or whatever versions the exploit page supports.
