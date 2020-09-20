@@ -9,9 +9,11 @@ _start:
 mov r7, r0
 ldr sp, =(0x10000000-0x7000)
 
+
 add r1, pc, #1
 bx r1
 .thumb
+
 
 ldr r0, =0x3a545041 @ Get APT:U handle, @ sp+12.
 str r0, [sp, #4]
@@ -82,7 +84,7 @@ ldr r3, [r7, #0x20]
 blx r3
 
 ldr r0, =0x1ED02A04
-ldr r1, =0x0100A5FF
+ldr r1, =0x01008CFF
 bl gsp_writereg @ Set sub-screen colorfill to orange.
 
 @ Copy the menuropbin via the GPU.
@@ -2013,6 +2015,7 @@ add r1, sp, #4 @ u8* out
 mov r2, #0
 str r2, [r1]
 bl cfg_getregion
+blx r2
 ldr r3, =0x4f4f4f4f
 blx checkerror_triggercrash
 
@@ -2151,7 +2154,7 @@ bx lr
 .pool
 
 sdpayload_path:
-.string16 "sdmc:/browserhax_hblauncher_ropbin_payload.bin"
+.string16 "sdmc:/browserhax_slot1_payload.bin"
 
 .align 2
 
@@ -2211,9 +2214,11 @@ b getaddrs_menustub_end
 .align 2
 
 menustub_start:
+
 add r1, pc, #1
 bx r1
 .thumb
+
 
 @ Wait for spider to terminate.
 ldr r0, =3000000000
@@ -2221,6 +2226,7 @@ mov r1, #0
 blx menustub_svcSleepThread
 
 @ Allocate linearmem with the same total size as Home Menu when it's fully loaded. Since the kernel will clear all of this during allocation, there's no need to clear the hblauncher parameter block contained within this memory anyway.
+
 menustub_memalloc:
 ldr r3, =(0x25652000-0x24352000) @ size
 mov r1, #0 @ addr
@@ -2269,7 +2275,7 @@ mov r7, r0
 
 @ Copy the menuropbin data from VRAM to the homemenu linearmem, via the GPU.
 ldr r0, =0x1f500000 @ src
-ldr r1, =0x35040000 @ dst
+ldr r1, =0x36340000 @ dst
 ldr r2, =0x10000 @ size
 mov r3, #0
 str r3, [sp, #0x0]
@@ -2279,114 +2285,136 @@ mov r3, #0x8
 str r3, [sp, #0xc]
 blx r7//gxcmd4
 
-ldr r0, =1000000000 @ Wait for the above copy to finish.
+ldr r0, =3000000000 @ Wait for the above copy to finish.
 mov r1, #0
 blx menustub_svcSleepThread
 
-@ Auto-locate the amsys_initialize function.
-ldr r0, =(~0x733a6d61)
-ldr r1, =(~0x7379)
-mvn r0, r0
-mvn r1, r1
-str r0, [sp, #0x24]
-str r1, [sp, #0x28]
+//these next few lines are awful but asm is not my strength
+ldr r1,=0xfffffffc
+mov r0,pc
+and r0,r0,r1
+mov r1,#0x20  //jump to that nop slide! yuck!
+add r0,r0,r1
+bx r0
 
-add r0, sp, #0x24
-mov r1, #7
-ldr r2, =0xe92d4010-1
-add r2, r2, #1
-mov r3, #0
-str r3, [sp, #0]
-str r3, [sp, #4]
-bl menustub_locateservinitcode
+.align 4
+.arm
 
-blx r0//amsys_initialize
+mov r5,#0
+mov r5,#0
+mov r5,#0
+mov r5,#0
+mov r5,#0
+mov r5,#0
+mov r5,#0
+mov r5,#0
+mov r5,#0
+mov r5,#0
+mov r5,#0
+mov r5,#0
 
-@ No need to initialize the "ir:rst" handle since that's left at value 0x0 when homemenu is properly running on Old3DS anyway.
+ldr r6,=0x100f98
+ldr r6,[r6]
 
-@ Auto-locate the aptipc_Initialize function, and load the APT handle address from the function's .pool too.
-add r0, sp, #0x10
-ldr r1, =0xe92d4070-1//push {r4, r5, r6, lr}
-add r1, r1, #1
-ldr r2, =0xe8bd8070-1 //pop {r4, r5, r6, pc}
-add r2, r2, #1
-ldr r3, =0x00020080-1
-add r3, r3, #1
-str r2, [r0, #0]
-str r3, [r0, #4]
-bl menustub_locatecode
+loop:
 
-str r0, [sp, #0x20]
-ldr r2, [r1, #0x8]
-str r2, [sp, #0x18] @ APT handle*
+ldr r0, =0x80000
+ldr r1, =0x08041000
+ldr r2, =0xC00
+add r0,r0,r5
+bl cfgs_getblock4
 
-add r0, sp, #0x10 @ Auto-locate APT_GetServHandle.
-ldr r1, =0xe92d41f0-1//push {r4, r5, r6, r7, r8, lr}
-add r1, r1, #1
-ldr r2, =0xe0a0cff9-1
-add r2, r2, #1
-ldr r3, [sp, #0x18]
-str r2, [r0, #0]
-str r3, [r0, #4]
-bl menustub_locatecode
-mov r3, r0
+ldr r3, =0x08041420
+ldr r4, [r3]
+ldr r3, =0x58584148  //"HAXX"
+cmp r4,r3
+beq skip_write
 
-sub r1, r1, #4
-ldr r1, [r1]
+ldr r0, =0x08040500
+ldr r1, =0x08041000
+ldr r2, =0x500
+bl memcpy
 
-@ Force the homemenu APT_GetServHandle code to use APT:S.
-adr r0, menustub_apts_servicestr
-str r0, [r1, #8]
-@ Do APT init for Home Menu.
-blx r3//APT_GetServHandle
+ldr r0, =0x80000
+ldr r1, =0x08040000
+ldr r2, =0xC00
+add r0,r0,r5
+bl cfgs_setblock4
 
-ldr r0, =0x101
-ldr r1, =0x20000002
-mov r2, sp
-mov r3, sp
-ldr r7, [sp, #0x20]
-blx r7//aptipc_Initialize
+skip_write:
 
-add r0, sp, #16 @ Auto-locate aptipc_Enable.
-ldr r1, =0xe92d4010-1//push {r4, lr}
-add r1, r1, #1
-ldr r2, =0x00030040-1
-add r2, r2, #1
-ldr r3, [sp, #0x18]
-str r2, [r0, #0]
-str r3, [r0, #4]
-bl menustub_locatecode
-mov r3, r0
+add r5,r5,#1
+cmp r5,#3
+bne loop
 
-ldr r0, =0x20000002
-blx r3//aptipc_Enable
+bl cfgs_updateblock
 
-add r0, sp, #0x10 @ Auto-locate aptipc_ReceiveParameter.
-ldr r1, =0xe92d5ff0-1
-add r1, r1, #1
-ldr r2, =0x000d0080-1
-add r2, r2, #1
-str r2, [r0, #0]
-bl menustub_locatecode
-mov r7, r0
+b .
+.pool
 
-@ Recv the param sent by NS during "LibraryApplet" startup.
-add r0, sp, #0x1c
-ldr r1, =0x101
-mov r2, r0
-mov r3, #0
-str r3, [sp, #0x0]
-str r0, [sp, #0x4]
-str r0, [sp, #0x8]
-blx r7 @ aptipc_ReceiveParameter inr0=u32* out appid inr1=u32 input appid inr2=u32* out signaltype inr3=buf insp0=size insp4=u32* out actual parambuf size insp8=outhandle*
+//chn:0x224078  twn:0x225088
+cfgs_getblock4:
+mrc             p15, 0, r4,c13,c0, 3
+ldr             r3, =0x4010082
+str             r3, [r4,#0x80]
+str 		r0, [r4,#0x88]
+str 		r1, [r4,#0x90]
+str 		r2, [r4,#0x84]
+mov             r0, #0xc
+orr             r0, r0, r2,lsl#4
+str           	r0, [r4,#0x8c]
+mov            	r0, r6
+ldr             r0, [r0]
+svc             0x32
+and             r1, r0, #0x80000000
+cmp             r1, #0
+ldrge           r0, [r4,#0x84]
+bx lr
+.pool
 
-ldr r5, [sp, #0x18] @ Close the APT handle.
-ldr r0, [r5]
-blx menustub_svcCloseHandle
-mov r1, #0
-str r1, [r5]
+cfgs_setblock4:
+mrc             p15, 0, r4,c13,c0, 3
+ldr             r3, =0x4020082
+str             r3, [r4,#0x80]
+str 		r0, [r4,#0x84]
+str 		r1, [r4,#0x90]
+str 		r2, [r4,#0x88]
+mov             r0, #0xa
+orr             r0, r0, r2,lsl#4
+str           	r0, [r4,#0x8c]
+mov            	r0, r6
+ldr             r0, [r0]
+svc             0x32
+and             r1, r0, #0x80000000
+cmp             r1, #0
+ldrge           r0, [r4,#0x84]
+bx lr
+.pool
 
-blx menustub_runropbin
+cfgs_updateblock:
+mrc             p15, 0, r4,c13,c0, 3
+ldr             r0, =0x4030000
+str             r0, [r4,#0x80]!
+mov            	r0, r6
+ldr             r0, [r0]
+svc             0x32
+and             r1, r0, #0x80000000
+cmp             r1, #0
+ldrge           r0, [r4,#4]
+bx lr
+.pool
+
+memcpy:
+add r4,r0,r2
+loop_memcpy:
+ldr r3,[r1],#4
+str r3,[r0],#4
+cmp r4,r0
+bne loop_memcpy
+bx lr
+.pool
+
+.thumb
 
 b .
 .pool
@@ -2523,7 +2551,8 @@ menustub_apts_servicestr:
 .string "APT:S"
 .align 2
 
-.space (menustub_start + 0x320) - .
+//.incbin "slot1.bin"
+.space (menustub_start + 0x500) - .
 menustub_end:
 .word 0
 

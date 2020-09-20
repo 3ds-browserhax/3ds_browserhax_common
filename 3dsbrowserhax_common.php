@@ -516,6 +516,10 @@ else if($browserver == 0x48)//1.7622.CN v8192/10.6.0-31. 1.7625.CN v9232/10.7.0-
 {
 	require_once("3dsbrowserhax_rop_spider_chn_v8192.php");
 }
+else if($browserver == 0x49)//1.7636.CN v11297/11.13.0-4C
+{
+	require_once("3dsbrowserhax_rop_spider_chn_v11297.php");
+}
 else if($browserver == 0x52)//1.7538.KR v0/4.2.0-9
 {
 	require_once("3dsbrowserhax_rop_spider_kor_v0.php");
@@ -547,6 +551,10 @@ else if($browserver == 0x67)//1.7616.TW v7168/10.2.0-28
 else if($browserver == 0x68)//1.7622.TW v8192/10.6.0-31. 1.7625.TW v9232/10.7.0-32.
 {
 	require_once("3dsbrowserhax_rop_spider_twn_v8192.php");
+}
+else if($browserver == 0x69)//1.7636.TW v11297/11.13.0-37
+{
+	require_once("3dsbrowserhax_rop_spider_twn_v11297.php");
 }
 else if($browserver == 0x80)//new3ds
 {
@@ -1989,7 +1997,7 @@ function generateropchain_type2()
 		$databuf[8] = 0x690062;
 		$databuf[9] = 0x6e;*/
 
-		$databuf = string_gendata_array("sdmc:/arm11code.bin", 1, 0x40);
+		$databuf = string_gendata_array("sdmc:/arm11slot.bin", 1, 0x40);
 
 		ropgen_writeregdata_wrap($ROPHEAP+0x40, $databuf, 0, 0x28);//Write the following utf16 string to ROPHEAP+0x40: "sdmc:/arm11code.bin".
 
