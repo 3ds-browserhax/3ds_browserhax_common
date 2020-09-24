@@ -87,10 +87,11 @@ The loader for Old3DS runs actual native code under the context of Home Menu, if
 
 # Screen colors
 When using browserhax the bottom-screen colorfill will be set to various colors in the following order:
-* 1) Yellow: Browser ROP started running, this also means the *exploit* *itself* worked fine.
-* 2) Gray: This colorfill is set right before jumping to the initial arm11code binary, for running native code for the first time.
-* 3) Orange: This is set after the \*hax payload was successfully loaded into memory via HTTP/SD.
-* 4) White: This is set by the \*hax payload itself when it starts running.
+* 1) Hot Pink: Browser ROP started running, this also means the *exploit* *itself* worked fine.
+* 2) Gray: This colorfill is set right before jumping to the initial arm11code binary, for running native code for the first time. (this goes by so fast it usually isn't seen)
+* 3) Orange: This is set after the \*hax payload was successfully loaded into memory via HTTP/SD. (also means arm11code.bin is running)
+* 4) White: This is set by the \*hax payload itself when it starts running.(aka browserhax_hblauncher_ropbin_payload.bin, which is essentially otherapp.bin for browsers)
+* 5) Green -> Yellow -> Blue -> Red: Additional *hax payload colors before hbmenu loads.
 
 # Credits
 * megazig for helping with APT(for APT stuff once the Home Menu code in the loader starts running) during the initial + eventually successful Old3DS Home Menu takeover implementation.
