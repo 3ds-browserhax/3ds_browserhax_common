@@ -994,9 +994,13 @@ else if($browserver == 0xD6)
 }
 else if($browserver == 0xD7)
 {
-    require_once("3dsbrowserhax_rop_skater_kor_v10272.php");
+    require_once("3dsbrowserhax_rop_skater_kor_v9232.php");
 }
 else if($browserver == 0xD8)
+{
+    require_once("3dsbrowserhax_rop_skater_kor_v10272.php");
+}
+else if($browserver == 0xD9)
 {
     require_once("3dsbrowserhax_rop_skater_kor_v11264.php");
 }
