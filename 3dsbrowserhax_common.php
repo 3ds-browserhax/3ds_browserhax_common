@@ -1012,6 +1012,10 @@ else if($browserver == 0xD9)
 {
     require_once("3dsbrowserhax_rop_skater_kor_v11264.php");
 }
+else if($browserver == 0xDA)
+{
+    require_once("3dsbrowserhax_rop_skater_kor_v12289.php");
+}
 else
 {
 	die("Unsupported browserver / region.");
